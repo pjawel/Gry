@@ -1,44 +1,65 @@
 [
   {
-    "id": "2048",
-    "title": "2048",
-    "thumbnail": "https://picsum.photos/seed/2048/300/200",
-    "url": "https://play2048.co/",
-    "description": "Join the numbers and get to the 2048 tile!"
+    "id": "bloxd-io",
+    "title": "Bloxd.io",
+    "thumbnail": "https://picsum.photos/seed/bloxd/300/200",
+    "url": "https://bloxd.io/",
+    "description": "Darmowa gra wieloosobowa w stylu Minecraft z wieloma trybami gry."
   },
   {
-    "id": "hextris",
-    "title": "Hextris",
-    "thumbnail": "https://picsum.photos/seed/hextris/300/200",
-    "url": "https://hextris.io/",
-    "description": "Fast-paced puzzle game inspired by Tetris."
+    "id": "obby-highest-jump",
+    "title": "Obby Highest Jump Ever",
+    "thumbnail": "https://picsum.photos/seed/jump/300/200",
+    "url": "https://html5.gamedistribution.com/rvvASMiM/eece738ce7be411cba9b6e333f1ec96f/index.html?timestamp=-62135596800&countryCode=pl&siteid=88&channelid=1&siteLocale=pl&locale=pl&gd_sdk_referrer_url=https%3A%2F%2Fwww.gry.pl%2Fgra%2Fobby-highest-jump-ever",
+    "description": "Skacz jak najwyżej w tym ekscytującym wyzwaniu parkour!"
   },
   {
-    "id": "flappy-bird",
-    "title": "Flappy Bird Clone",
-    "thumbnail": "https://picsum.photos/seed/flappy/300/200",
-    "url": "https://wayou.github.io/FlappyBird/",
-    "description": "The classic bird flapping game."
+    "id": "tower-of-hell",
+    "title": "Tower of Hell Obby Blox",
+    "thumbnail": "https://picsum.photos/seed/tower/300/200",
+    "url": "https://html5.gamedistribution.com/rvvASMiM/2a9028004d8a468fb1e53fcd2551b8ab/index.html?timestamp=-62135596800&countryCode=pl&siteid=88&channelid=1&siteLocale=pl&locale=pl&gd_sdk_referrer_url=https%3A%2F%2Fwww.gry.pl%2Fgra%2Ftower-of-hell-obby-blox",
+    "description": "Przetrwaj w wieży pełnej pułapek i przeszkód."
   },
   {
-    "id": "pacman",
-    "title": "Google Pacman",
-    "thumbnail": "https://picsum.photos/seed/pacman/300/200",
-    "url": "https://www.google.com/logos/2010/pacman10-i.html",
-    "description": "The legendary arcade game."
+    "id": "steal-brainrot",
+    "title": "Steal Brainrot Duel",
+    "thumbnail": "https://picsum.photos/seed/duel/300/200",
+    "url": "https://html5.gamedistribution.com/rvvASMiM/31628f3b940847189cb0cea3d943abe0/index.html?timestamp=-62135596800&countryCode=pl&siteid=88&channelid=1&siteLocale=pl&locale=pl&gd_sdk_referrer_url=https%3A%2F%2Fwww.gry.pl%2Fgra%2Fsteal-brainrot-duel",
+    "description": "Szybki pojedynek pełen humoru i akcji."
   },
   {
-    "id": "dino",
-    "title": "Chrome Dino",
-    "thumbnail": "https://picsum.photos/seed/dino/300/200",
-    "url": "https://chromedino.com/",
-    "description": "Run, jump, and avoid obstacles."
+    "id": "fireboy-watergirl-6",
+    "title": "Ogień i Woda 6: Bajki",
+    "thumbnail": "https://picsum.photos/seed/firewater/300/200",
+    "url": "https://html5.gamedistribution.com/rvvASMiM/56da8a54fe204845b34ccff750d4a60b/index.html?timestamp=-62135596800&countryCode=pl&siteid=88&channelid=1&siteLocale=pl&locale=pl&gd_sdk_referrer_url=https%3A%2F%2Fwww.gry.pl%2Fgra%2Fogien-i-woda-6-bajki",
+    "description": "Współpracuj jako Ogień i Woda, aby rozwiązać zagadki w bajkowym świecie."
   },
   {
-    "id": "snake",
-    "title": "Google Snake",
-    "thumbnail": "https://picsum.photos/seed/snake/300/200",
-    "url": "https://www.google.com/logos/2010/pacman10-i.html",
-    "description": "Classic snake game."
+    "id": "dynamons-world",
+    "title": "Dynamons World",
+    "thumbnail": "https://picsum.photos/seed/dynamons/300/200",
+    "url": "https://html5.gamedistribution.com/rvvASMiM/61e157f72a4a40e18da245bee8891694/index.html?timestamp=-62135596800&siteid=88&siteLocale=pl&locale=pl&channelid=1&gd_sdk_referrer_url=https%3A%2F%2Fwww.gry.pl%2Fgra%2Fdynamons-world",
+    "description": "Trenuj swoje Dynamony i walcz o tytuł mistrza w tym świecie RPG."
+  },
+  {
+    "id": "italian-brainrot",
+    "title": "Italian Brainrot Obby Parkour",
+    "thumbnail": "https://picsum.photos/seed/italy/300/200",
+    "url": "https://html5.gamedistribution.com/rvvASMiM/ad14e488375b4e41af52a4617f6837d0/index.html?timestamp=-62135596800&countryCode=pl&siteid=88&channelid=1&siteLocale=pl&locale=pl&gd_sdk_referrer_url=https%3A%2F%2Fwww.gry.pl%2Fgra%2Fitalian-brainrot-obby-parkour",
+    "description": "Włoska przygoda parkour pełna niespodzianek."
+  },
+  {
+    "id": "brainrot-mega-parkour",
+    "title": "Brainrot Mega Parkour",
+    "thumbnail": "https://picsum.photos/seed/mega/300/200",
+    "url": "https://html5.gamedistribution.com/rvvASMiM/52c85b3037d84d5f9fbd7108bc832ccc/index.html?timestamp=-62135596800&countryCode=pl&siteid=88&channelid=1&siteLocale=pl&locale=pl&gd_sdk_referrer_url=https%3A%2F%2Fwww.gry.pl%2Fgra%2Fbrainrot-mega-parkour",
+    "description": "Największe wyzwanie parkour, jakie kiedykolwiek widziałeś!"
+  },
+  {
+    "id": "combat-strike-2",
+    "title": "Combat Strike 2",
+    "thumbnail": "https://picsum.photos/seed/combat/300/200",
+    "url": "https://html5.gamedistribution.com/rvvASMiM/28b3c5df36c44c5a8af61c34188bfd52/index.html?timestamp=-62135596800&countryCode=pl&siteid=88&channelid=1&siteLocale=pl&locale=pl&gd_sdk_referrer_url=https%3A%2F%2Fwww.gry.pl%2Fgra%2Fcombat-strike-2",
+    "description": "Dynamiczna strzelanka wieloosobowa z wieloma mapami i broniami."
   }
 ]
