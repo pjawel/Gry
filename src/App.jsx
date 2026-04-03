@@ -3,10 +3,12 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
-import { useState } from 'react';
+import { useState, useMemo } from 'react';
 import { Gamepad2, Search, X, Maximize2, ChevronLeft } from 'lucide-react';
 import { motion, AnimatePresence } from 'motion/react';
 import gamesData from './data/games.json';
+
+const shuffledAllGames = [...gamesData].sort(() => 0.5 - Math.random());
 
 export default function App() {
   const [selectedGame, setSelectedGame] = useState(null);
@@ -19,6 +21,13 @@ export default function App() {
   const handleGameSelect = (game) => {
     setSelectedGame(game);
   };
+
+  const recommendedGames = useMemo(() => {
+    if (!selectedGame) return [];
+    return shuffledAllGames
+      .filter(g => g.id !== selectedGame.id)
+      .slice(0, 6);
+  }, [selectedGame]);
 
   const closeGame = () => {
     setSelectedGame(null);
@@ -129,7 +138,7 @@ export default function App() {
                         className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500"
                         loading="lazy"
                         onError={(e) => {
-                          e.currentTarget.style.display = 'none';
+                          e.currentTarget.src = `https://picsum.photos/seed/${game.id}/400/300`;
                         }}
                       />
                     </div>
@@ -227,13 +236,9 @@ export default function App() {
                   </div>
                   
                   <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-1 gap-4">
-                    {gamesData
-                      .filter(g => g.id !== selectedGame.id)
-                      .sort(() => 0.5 - Math.random())
-                      .slice(0, 6)
-                      .map((game) => (
-                        <div
-                          key={game.id}
+                    {recommendedGames.map((game) => (
+                      <div
+                        key={game.id}
                           className="group flex gap-3 p-2 bg-zinc-900/50 border border-zinc-800 rounded-xl cursor-pointer hover:border-indigo-500/30 hover:bg-zinc-800/50 transition-all"
                           onClick={() => handleGameSelect(game)}
                         >
@@ -244,7 +249,7 @@ export default function App() {
                               className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500"
                               loading="lazy"
                               onError={(e) => {
-                                e.currentTarget.style.display = 'none';
+                                e.currentTarget.src = `https://picsum.photos/seed/${game.id}/100/100`;
                               }}
                             />
                           </div>
