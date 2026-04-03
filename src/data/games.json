@@ -1,0 +1,44 @@
+[
+  {
+    "id": "2048",
+    "title": "2048",
+    "thumbnail": "https://picsum.photos/seed/2048/300/200",
+    "url": "https://play2048.co/",
+    "description": "Join the numbers and get to the 2048 tile!"
+  },
+  {
+    "id": "hextris",
+    "title": "Hextris",
+    "thumbnail": "https://picsum.photos/seed/hextris/300/200",
+    "url": "https://hextris.io/",
+    "description": "Fast-paced puzzle game inspired by Tetris."
+  },
+  {
+    "id": "flappy-bird",
+    "title": "Flappy Bird Clone",
+    "thumbnail": "https://picsum.photos/seed/flappy/300/200",
+    "url": "https://wayou.github.io/FlappyBird/",
+    "description": "The classic bird flapping game."
+  },
+  {
+    "id": "pacman",
+    "title": "Google Pacman",
+    "thumbnail": "https://picsum.photos/seed/pacman/300/200",
+    "url": "https://www.google.com/logos/2010/pacman10-i.html",
+    "description": "The legendary arcade game."
+  },
+  {
+    "id": "dino",
+    "title": "Chrome Dino",
+    "thumbnail": "https://picsum.photos/seed/dino/300/200",
+    "url": "https://chromedino.com/",
+    "description": "Run, jump, and avoid obstacles."
+  },
+  {
+    "id": "snake",
+    "title": "Google Snake",
+    "thumbnail": "https://picsum.photos/seed/snake/300/200",
+    "url": "https://www.google.com/logos/2010/pacman10-i.html",
+    "description": "Classic snake game."
+  }
+]
