@@ -111,7 +111,7 @@ export default function App() {
                   <div className="absolute top-0 right-0 w-1/2 h-full opacity-20 pointer-events-none">
                     <div className="absolute inset-0 bg-gradient-to-l from-indigo-600 to-transparent" />
                     <img 
-                      src="https://picsum.photos/seed/arcade/800/600" 
+                      src="https://images.unsplash.com/photo-1542751371-adc38448a05e?auto=format&fit=crop&w=800&h=600&q=80" 
                       alt="Arcade Background" 
                       className="w-full h-full object-cover"
                       referrerPolicy="no-referrer"
@@ -137,8 +137,11 @@ export default function App() {
                         alt={game.title}
                         className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500"
                         loading="lazy"
+                        referrerPolicy="no-referrer"
                         onError={(e) => {
-                          e.currentTarget.src = `https://picsum.photos/seed/${game.id}/400/300`;
+                          const gameTitle = encodeURIComponent(game.title + " game");
+                          e.currentTarget.src = `https://loremflickr.com/400/300/game,${gameTitle}`;
+                          e.currentTarget.onerror = null;
                         }}
                       />
                     </div>
@@ -248,8 +251,11 @@ export default function App() {
                               alt={game.title}
                               className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500"
                               loading="lazy"
+                              referrerPolicy="no-referrer"
                               onError={(e) => {
-                                e.currentTarget.src = `https://picsum.photos/seed/${game.id}/100/100`;
+                                const gameTitle = encodeURIComponent(game.title + " game");
+                                e.currentTarget.src = `https://loremflickr.com/100/100/game,${gameTitle}`;
+                                e.currentTarget.onerror = null;
                               }}
                             />
                           </div>
