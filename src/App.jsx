@@ -124,12 +124,12 @@ export default function App() {
                   >
                     <div className="aspect-[4/3] overflow-hidden">
                       <img
-                        src={`https://images.weserv.nl/?url=${encodeURIComponent(game.thumbnail)}&w=400&h=300&fit=cover`}
+                        src={`https://wsrv.nl/?url=${encodeURIComponent(game.thumbnail)}&w=400&h=300&fit=cover`}
                         alt={game.title}
                         className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500"
-                        referrerPolicy="no-referrer"
+                        loading="lazy"
                         onError={(e) => {
-                          e.currentTarget.src = `https://picsum.photos/seed/${game.id}/400/300`;
+                          e.currentTarget.style.display = 'none';
                         }}
                       />
                     </div>
@@ -239,12 +239,12 @@ export default function App() {
                         >
                           <div className="w-20 h-20 shrink-0 rounded-lg overflow-hidden">
                             <img
-                              src={`https://images.weserv.nl/?url=${encodeURIComponent(game.thumbnail)}&w=100&h=100&fit=cover`}
+                              src={`https://wsrv.nl/?url=${encodeURIComponent(game.thumbnail)}&w=100&h=100&fit=cover`}
                               alt={game.title}
                               className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500"
-                              referrerPolicy="no-referrer"
+                              loading="lazy"
                               onError={(e) => {
-                                e.currentTarget.src = `https://picsum.photos/seed/${game.id}/100/100`;
+                                e.currentTarget.style.display = 'none';
                               }}
                             />
                           </div>
