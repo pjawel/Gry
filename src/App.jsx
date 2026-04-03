@@ -3,7 +3,7 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 import { Gamepad2, Search, X, Maximize2, ChevronLeft } from 'lucide-react';
 import { motion, AnimatePresence } from 'motion/react';
 import gamesData from './data/games.json';
@@ -11,15 +11,10 @@ import gamesData from './data/games.json';
 export default function App() {
   const [selectedGame, setSelectedGame] = useState(null);
   const [searchQuery, setSearchQuery] = useState('');
-  const [filteredGames, setFilteredGames] = useState(gamesData);
-
-  useEffect(() => {
-    const filtered = gamesData.filter(game =>
-      game.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      game.description.toLowerCase().includes(searchQuery.toLowerCase())
-    );
-    setFilteredGames(filtered);
-  }, [searchQuery]);
+  const filteredGames = gamesData.filter(game =>
+    game.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
+    game.description.toLowerCase().includes(searchQuery.toLowerCase())
+  );
 
   const handleGameSelect = (game) => {
     setSelectedGame(game);
@@ -129,10 +124,13 @@ export default function App() {
                   >
                     <div className="aspect-[4/3] overflow-hidden">
                       <img
-                        src={game.thumbnail}
+                        src={`https://images.weserv.nl/?url=${encodeURIComponent(game.thumbnail)}&w=400&h=300&fit=cover`}
                         alt={game.title}
                         className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500"
                         referrerPolicy="no-referrer"
+                        onError={(e) => {
+                          e.currentTarget.src = `https://picsum.photos/seed/${game.id}/400/300`;
+                        }}
                       />
                     </div>
                     <div className="p-4">
@@ -149,88 +147,144 @@ export default function App() {
 
               {filteredGames.length === 0 && (
                 <div className="py-20 text-center">
-                  <p className="text-zinc-500 text-lg">Nie znaleziono gier dla "{searchQuery}"</p>
+                  <p className="text-zinc-500 text-lg">Nie znaleziono gier dla &quot;{searchQuery}&quot;</p>
                 </div>
               )}
             </motion.div>
           ) : (
             <motion.div
               key="viewer"
-              initial={{ opacity: 0, scale: 0.95 }}
-              animate={{ opacity: 1, scale: 1 }}
-              exit={{ opacity: 0, scale: 0.95 }}
-              className="fixed inset-0 z-50 bg-zinc-950 flex flex-col"
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: 20 }}
+              className="space-y-6"
             >
-              <div className="h-16 border-b border-zinc-800 flex items-center justify-between px-4 bg-zinc-900/50">
-                <button
-                  onClick={closeGame}
-                  className="flex items-center gap-2 text-zinc-400 hover:text-white transition-colors"
-                >
-                  <ChevronLeft className="w-5 h-5" />
-                  <span className="font-medium">Powrót</span>
-                </button>
-                
-                <div className="flex items-center gap-3">
-                  <div className="p-1.5 bg-indigo-600 rounded-md">
-                    <Gamepad2 className="w-4 h-4 text-white" />
+              {/* Game Header */}
+              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 bg-zinc-900/50 p-4 rounded-2xl border border-zinc-800">
+                <div className="flex items-center gap-4">
+                  <button
+                    onClick={closeGame}
+                    className="p-2 bg-zinc-800 hover:bg-zinc-700 text-zinc-300 hover:text-white rounded-xl transition-all"
+                  >
+                    <ChevronLeft className="w-5 h-5" />
+                  </button>
+                  <div>
+                    <h2 className="text-xl font-bold text-zinc-100">{selectedGame.title}</h2>
+                    <p className="text-xs text-zinc-500">Grasz teraz w {selectedGame.title}</p>
                   </div>
-                  <h2 className="font-bold text-zinc-100">{selectedGame.title}</h2>
                 </div>
-
+                
                 <div className="flex items-center gap-2">
                   <button 
                     title="Pełny ekran"
-                    className="p-2 text-zinc-400 hover:text-white hover:bg-zinc-800 rounded-lg transition-all"
+                    className="flex-1 sm:flex-none flex items-center justify-center gap-2 px-4 py-2 bg-zinc-800 hover:bg-zinc-700 text-zinc-300 hover:text-white rounded-xl transition-all text-sm font-medium"
                     onClick={() => {
                       const iframe = document.getElementById('game-iframe');
                       if (iframe?.requestFullscreen) iframe.requestFullscreen();
                     }}
                   >
-                    <Maximize2 className="w-5 h-5" />
+                    <Maximize2 className="w-4 h-4" />
+                    <span>Pełny ekran</span>
                   </button>
                   <button
                     onClick={closeGame}
-                    className="p-2 text-zinc-400 hover:text-white hover:bg-zinc-800 rounded-lg transition-all"
+                    className="p-2 bg-zinc-800 hover:bg-zinc-700 text-zinc-300 hover:text-white rounded-xl transition-all"
                   >
                     <X className="w-5 h-5" />
                   </button>
                 </div>
               </div>
 
-              <div className="flex-1 bg-black relative">
-                <iframe
-                  id="game-iframe"
-                  src={selectedGame.url}
-                  className="w-full h-full border-none"
-                  title={selectedGame.title}
-                  allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
-                  allowFullScreen
-                />
+              <div className="grid grid-cols-1 lg:grid-cols-4 gap-8">
+                {/* Game Window */}
+                <div className="lg:col-span-3 space-y-6">
+                  <div className="aspect-video w-full bg-black rounded-3xl overflow-hidden shadow-2xl shadow-indigo-500/10 border border-zinc-800 relative">
+                    <iframe
+                      id="game-iframe"
+                      src={selectedGame.url}
+                      className="w-full h-full border-none"
+                      title={selectedGame.title}
+                      allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
+                      allowFullScreen
+                    />
+                  </div>
+                  
+                  <div className="bg-zinc-900/30 p-6 rounded-3xl border border-zinc-800/50">
+                    <h3 className="text-lg font-bold mb-2">O grze</h3>
+                    <p className="text-zinc-400 leading-relaxed">
+                      {selectedGame.description}
+                    </p>
+                  </div>
+                </div>
+
+                {/* Recommendations Sidebar */}
+                <div className="lg:col-span-1 space-y-6">
+                  <div className="flex items-center justify-between">
+                    <h3 className="font-bold text-zinc-100 flex items-center gap-2">
+                      <Gamepad2 className="w-5 h-5 text-indigo-500" />
+                      Polecane gry
+                    </h3>
+                  </div>
+                  
+                  <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-1 gap-4">
+                    {gamesData
+                      .filter(g => g.id !== selectedGame.id)
+                      .sort(() => 0.5 - Math.random())
+                      .slice(0, 6)
+                      .map((game) => (
+                        <div
+                          key={game.id}
+                          className="group flex gap-3 p-2 bg-zinc-900/50 border border-zinc-800 rounded-xl cursor-pointer hover:border-indigo-500/30 hover:bg-zinc-800/50 transition-all"
+                          onClick={() => handleGameSelect(game)}
+                        >
+                          <div className="w-20 h-20 shrink-0 rounded-lg overflow-hidden">
+                            <img
+                              src={`https://images.weserv.nl/?url=${encodeURIComponent(game.thumbnail)}&w=100&h=100&fit=cover`}
+                              alt={game.title}
+                              className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500"
+                              referrerPolicy="no-referrer"
+                              onError={(e) => {
+                                e.currentTarget.src = `https://picsum.photos/seed/${game.id}/100/100`;
+                              }}
+                            />
+                          </div>
+                          <div className="flex flex-col justify-center min-w-0">
+                            <h4 className="font-bold text-sm text-zinc-200 group-hover:text-indigo-400 transition-colors truncate">
+                              {game.title}
+                            </h4>
+                            <p className="text-xs text-zinc-500 line-clamp-2 mt-1">
+                              {game.description}
+                            </p>
+                          </div>
+                        </div>
+                      ))}
+                  </div>
+                </div>
               </div>
             </motion.div>
           )}
         </AnimatePresence>
       </main>
 
+
       {/* Footer */}
-      {!selectedGame && (
-        <footer className="border-t border-zinc-800 py-12 mt-20">
-          <div className="container mx-auto px-4 flex flex-col md:flex-row justify-between items-center gap-8">
-            <div className="flex items-center gap-2">
-              <Gamepad2 className="w-5 h-5 text-indigo-500" />
-              <span className="font-bold text-zinc-400">GryZaDarmo</span>
-            </div>
-            <div className="flex gap-8 text-sm text-zinc-500">
-              <a href="#" className="hover:text-indigo-400 transition-colors">Polityka Prywatności</a>
-              <a href="#" className="hover:text-indigo-400 transition-colors">Regulamin</a>
-              <a href="#" className="hover:text-indigo-400 transition-colors">Kontakt</a>
-            </div>
-            <p className="text-sm text-zinc-600">
-              © {new Date().getFullYear()} GryZaDarmo. Wszelkie prawa zastrzeżone.
-            </p>
+      <footer className="border-t border-zinc-800 py-12 mt-20">
+        <div className="container mx-auto px-4 flex flex-col md:flex-row justify-between items-center gap-8">
+          <div className="flex items-center gap-2">
+            <Gamepad2 className="w-5 h-5 text-indigo-500" />
+            <span className="font-bold text-zinc-400">GryZaDarmo</span>
           </div>
-        </footer>
-      )}
+          <div className="flex gap-8 text-sm text-zinc-500">
+            <a href="#" className="hover:text-indigo-400 transition-colors">Polityka Prywatności</a>
+            <a href="#" className="hover:text-indigo-400 transition-colors">Regulamin</a>
+            <a href="#" className="hover:text-indigo-400 transition-colors">Kontakt</a>
+          </div>
+          <p className="text-sm text-zinc-600">
+            © {new Date().getFullYear()} GryZaDarmo. Wszelkie prawa zastrzeżone.
+          </p>
+        </div>
+      </footer>
+
     </div>
   );
 }
