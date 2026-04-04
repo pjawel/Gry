@@ -6,7 +6,7 @@
 import { useState, useMemo, useEffect } from 'react';
 import { Gamepad2, Search, X, Maximize2, ChevronLeft } from 'lucide-react';
 import { motion, AnimatePresence } from 'motion/react';
-import { Routes, Route, useNavigate, useParams } from 'react-router-dom';
+import { Routes, Route, useNavigate, useParams, Link } from 'react-router-dom';
 import gamesData from './data/games.json';
 
 const shuffledAllGames = [...gamesData].sort(() => 0.5 - Math.random());
@@ -483,9 +483,9 @@ export default function App() {
       {/* Header */}
       <header className="sticky top-0 z-40 w-full border-b-4 border-zinc-100 bg-white/90 backdrop-blur-md">
         <div className="container mx-auto px-4 h-20 flex items-center justify-between">
-          <div 
+          <Link 
+            to="/"
             className="flex items-center gap-3 cursor-pointer group"
-            onClick={() => window.location.href = '/'}
           >
             <div className="p-3 bg-brand-pink rounded-2xl group-hover:rotate-12 transition-transform shadow-lg shadow-brand-pink/20">
               <Gamepad2 className="w-8 h-8 text-white" />
@@ -493,7 +493,7 @@ export default function App() {
             <h1 className="text-2xl font-black tracking-tight text-zinc-900 font-display">
               GryZaDarmo
             </h1>
-          </div>
+          </Link>
 
           <div className="relative max-w-md w-full hidden md:block">
             <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-zinc-400" />
@@ -530,9 +530,9 @@ export default function App() {
               <span className="font-black text-xl text-zinc-800 font-display">GryZaDarmo</span>
             </div>
             <div className="flex flex-wrap justify-center gap-8 text-sm font-bold text-zinc-500">
-              <button onClick={() => window.location.href = '/polityka-prywatnosci'} className="hover:text-brand-blue transition-colors">Polityka Prywatności</button>
-              <button onClick={() => window.location.href = '/regulamin'} className="hover:text-brand-blue transition-colors">Regulamin</button>
-              <button onClick={() => window.location.href = '/dmca'} className="hover:text-brand-blue transition-colors">DMCA</button>
+              <Link to="/polityka-prywatnosci" className="hover:text-brand-blue transition-colors">Polityka Prywatności</Link>
+              <Link to="/regulamin" className="hover:text-brand-blue transition-colors">Regulamin</Link>
+              <Link to="/dmca" className="hover:text-brand-blue transition-colors">DMCA</Link>
             </div>
           </div>
           <div className="pt-8 border-t border-zinc-100 flex flex-col md:flex-row justify-between items-center gap-4">
