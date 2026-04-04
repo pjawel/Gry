@@ -1,5 +1,145 @@
 [
   {
+    "id": "robot-astro-party",
+    "title": "Robot Astro Party",
+    "thumbnail": "https://static.gamepix.com/images/icons/robot-astro-party.png",
+    "url": "https://h5.gamepix.com/TSATTO/3BhRHvGg1LyoLaGblIPTvnSo0RC/index.html?lang=pl&namespace=robot-astro-party",
+    "description": "Dynamiczna gra akcji z robotami w kosmosie. Walcz i przetrwaj w galaktycznej bitwie!"
+  },
+  {
+    "id": "10x10",
+    "title": "10x10",
+    "thumbnail": "https://static.gamepix.com/images/icons/10x10.png",
+    "url": "https://games.gamesplaza.com/ext/distribution/10x10/index.html?utm_referrer=max&bm.source=www.coolgames.com&dist.version=2",
+    "description": "Wciągająca gra logiczna w stylu Tetris. Układaj klocki na planszy 10x10 i zdobywaj punkty."
+  },
+  {
+    "id": "stickman-legacy-of-war-3d",
+    "title": "Stickman 3D Legacy of War",
+    "thumbnail": "https://static.gamepix.com/images/icons/stickman-legacy-of-war-3d.png",
+    "url": "https://h5.gamepix.com/EOAA2/6992096164052992000/index.html?lang=pl&namespace=stickman-legacy-of-war-3d",
+    "description": "Epicka strategia wojenna ze stickmanami. Prowadź swoją armię do zwycięstwa w trójwymiarowym świecie."
+  },
+  {
+    "id": "war-the-knights",
+    "title": "War the Knights",
+    "thumbnail": "https://static.gamepix.com/images/icons/war-the-knights.png",
+    "url": "https://h5.gamepix.com/G6H7RT/38bcHXv7FXIDX9c32JQQFRUc1Yd/index.html?lang=pl&namespace=war-the-knights",
+    "description": "Średniowieczna gra wojenna. Walcz jako rycerz i broń swojego królestwa przed najeźdźcami."
+  },
+  {
+    "id": "spinning-oia-oia-cat-bricker",
+    "title": "Spinning Oia Oia Cat Bricker",
+    "thumbnail": "https://static.gamepix.com/images/icons/spinning-oia-oia-cat-bricker.png",
+    "url": "https://h5.gamepix.com/I3PTAN/2sg8SLEQ1ST2dmXXxWz4LCti4de/index.html?lang=pl&namespace=spinning-oia-oia-cat-bricker",
+    "description": "Zabawna gra zręcznościowa z wirującym kotem. Rozbijaj bloki i zdobywaj wysokie wyniki."
+  },
+  {
+    "id": "taming-io",
+    "title": "Taming.io",
+    "thumbnail": "https://static.gamepix.com/images/icons/taming-io.png",
+    "url": "https://taming.io/",
+    "description": "Gra survival .io z oswojonymi zwierzętami. Zbieraj zasoby, buduj bazę i walcz o przetrwanie."
+  },
+  {
+    "id": "stickman-street-fighting",
+    "title": "Stickman Street Fighting 3D",
+    "thumbnail": "https://static.gamepix.com/images/icons/stickman-street-fighting.png",
+    "url": "https://h5.gamepix.com/T1A10/6982047362214526976/index.html?lang=pl&namespace=stickman-street-fighting",
+    "description": "Uliczna bijatyka 3D ze stickmanami. Wykorzystaj swoje umiejętności walki, aby pokonać przeciwników."
+  },
+  {
+    "id": "counter-craft-modern-warfare",
+    "title": "Counter Craft Modern Warfare",
+    "thumbnail": "https://static.gamepix.com/images/icons/counter-craft-modern-warfare.png",
+    "url": "https://h5.gamepix.com/FUA3FA/2tUDeRc0eXB0eJNYtN4cNUqAuQ4/index.html?lang=pl&namespace=counter-craft-modern-warfare",
+    "description": "Strzelanka FPS łącząca świat Minecrafta z mechaniką Counter-Strike. Walcz na nowoczesnych mapach."
+  },
+  {
+    "id": "factory-idle",
+    "title": "Factory Idle",
+    "thumbnail": "https://static.gamepix.com/images/icons/factory-idle.png",
+    "url": "https://factoryidle.com/",
+    "description": "Strategiczna gra typu idle. Buduj i optymalizuj swoją fabrykę, aby zmaksymalizować zyski."
+  },
+  {
+    "id": "3d-bowling",
+    "title": "3D Bowling",
+    "thumbnail": "https://static.gamepix.com/images/icons/3d-bowling.png",
+    "url": "https://play.famobi.com/3d-bowling/A-FAK0S",
+    "description": "Realistyczny symulator kręgli 3D. Rzucaj kulą i zdobywaj strajki w różnych kręgielniach."
+  },
+  {
+    "id": "tentrix",
+    "title": "TenTrix",
+    "thumbnail": "https://static.gamepix.com/images/icons/tentrix.png",
+    "url": "https://h5.gamepix.com/40264/6411139181452019/index.html?lang=pl&namespace=tentrix",
+    "description": "Kolorowa gra logiczna. Układaj klocki o różnych kształtach na planszy, aby tworzyć pełne linie."
+  },
+  {
+    "id": "noob-vs-pro-snowman",
+    "title": "Noob vs Pro Snowman",
+    "thumbnail": "https://static.gamepix.com/images/icons/noob-vs-pro-snowman.png",
+    "url": "https://h5.gamepix.com/OOON76/2ixfHowAR4oS3yn8o4dNqppjFQ6/index.html?lang=pl&namespace=noob-vs-pro-snowman",
+    "description": "Zabawna przygoda w świecie Noob vs Pro. Pomóż Noobowi przetrwać zimowe wyzwania."
+  },
+  {
+    "id": "4-colors-multiplayer",
+    "title": "4 Colors Multiplayer",
+    "thumbnail": "https://static.gamepix.com/images/icons/4-colors-multiplayer.png",
+    "url": "https://h5.gamepix.com/77A7L/3B9rtqL5XDzl1XrQF6RG7XOsn87/index.html?lang=pl&namespace=4-colors-multiplayer",
+    "description": "Klasyczna gra karciana online. Graj z innymi graczami i pozbądź się wszystkich kart jako pierwszy."
+  },
+  {
+    "id": "color-pixel-art-classic",
+    "title": "Color Pixel Art Classic",
+    "thumbnail": "https://static.gamepix.com/images/icons/color-pixel-art-classic.png",
+    "url": "https://play.famobi.com/color-pixel-art-classic/A-FAK0S",
+    "description": "Relaksująca gra logiczna w kolorowanie po numerach. Twórz piękne obrazy pixel art."
+  },
+  {
+    "id": "worms-zone",
+    "title": "Worms Zone",
+    "thumbnail": "https://static.gamepix.com/images/icons/worms-zone.png",
+    "url": "https://h5.gamepix.com/42ZZO/3AtHVg9K917vFMwCwWhhuHnIBLD/index.html?lang=pl&namespace=worms-zone",
+    "description": "Popularna gra .io z wężami. Jedz, rośnij i rywalizuj z innymi graczami na wielkiej arenie."
+  },
+  {
+    "id": "dragon-simulator-3d",
+    "title": "Dragon Simulator 3D",
+    "thumbnail": "https://static.gamepix.com/images/icons/dragon-simulator-3d.png",
+    "url": "https://h5.gamepix.com/30ODIA/2ttfyJ4UhKswCGzXshixREZjPqc/index.html?lang=pl&namespace=dragon-simulator-3d",
+    "description": "Symulator smoka 3D. Lataj, ziej ogniem i eksploruj ogromny świat jako potężny smok."
+  },
+  {
+    "id": "helicopter-and-tank-battle-desert-storm-multiplayer",
+    "title": "Helicopter and Tank Battle Desert Storm Multiplayer",
+    "thumbnail": "https://static.gamepix.com/images/icons/helicopter-and-tank-battle-desert-storm-multiplayer.png",
+    "url": "https://html5.gamedistribution.com/9fa5dcb88aac40f6a9ca543ae95218a9/",
+    "description": "Wieloosobowa bitwa helikopterów i czołgów na pustyni. Walcz o dominację w trudnych warunkach."
+  },
+  {
+    "id": "turbo-dismounting",
+    "title": "Turbo Dismounting",
+    "thumbnail": "https://static.gamepix.com/images/icons/turbo-dismounting.png",
+    "url": "https://h5.gamepix.com/ITTTN/7085632007002128384/index.html?lang=pl&namespace=turbo-dismounting",
+    "description": "Symulator wypadków i kaskaderskich wyczynów. Sprawdź, jak wielkie zniszczenia możesz spowodować."
+  },
+  {
+    "id": "horror-room-with-starts",
+    "title": "Horror Room With Starts",
+    "thumbnail": "https://static.gamepix.com/images/icons/horror-room-with-starts.png",
+    "url": "https://h5.gamepix.com/3OH73H/2uwLwtNkC2CMkILsCsrDP147T3E/index.html?lang=pl&namespace=horror-room-with-starts",
+    "description": "Mroczna przygoda w pokoju grozy. Rozwiązuj zagadki i spróbuj uciec z nawiedzonego miejsca."
+  },
+  {
+    "id": "balloon-smash",
+    "title": "Balloon Smash",
+    "thumbnail": "https://static.gamepix.com/images/icons/balloon-smash.png",
+    "url": "https://h5.gamepix.com/AN1LLO/2mUMXn0XVr8RcEDDiArGo1g2vwk/index.html?lang=pl&namespace=balloon-smash",
+    "description": "Szybka gra zręcznościowa. Rozbijaj balony tak szybko, jak potrafisz, aby zdobyć punkty."
+  },
+  {
     "id": "bloxd-io",
     "title": "Bloxd.io",
     "thumbnail": "https://geometry-games.io/data/image/game/bloxd-io/bloxd-io.png",

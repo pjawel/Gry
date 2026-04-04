@@ -72,6 +72,16 @@ const getGameThumbnail = (url, title, size = '400x300') => {
   return `https://wsrv.nl/?url=${encodedUrl}&w=${width}&h=${height}&fit=cover&output=webp&default=https%3A%2F%2Floremflickr.com%2F${width}%2F${height}%2Fgame%2C${encodeURIComponent(title)}`;
 };
 
+const getGameCategory = (game) => {
+  if (!game) return null;
+  return CATEGORIES.find(cat => 
+    cat.keywords.some(k => 
+      game.title.toLowerCase().includes(k.toLowerCase()) || 
+      (game.description && game.description.toLowerCase().includes(k.toLowerCase()))
+    )
+  ) || CATEGORIES[0];
+};
+
 function GameContent({ onLoginRequired }) {
   const { slug, categoryId } = useParams();
   const navigate = useNavigate();
@@ -449,13 +459,20 @@ function GameContent({ onLoginRequired }) {
                       className="group relative bg-white border-2 border-zinc-100 rounded-2xl overflow-hidden cursor-pointer shadow-md hover:shadow-xl transition-all"
                       onClick={() => handleGameSelect(game)}
                     >
-                      <div className="aspect-square overflow-hidden">
+                      <div className="aspect-square overflow-hidden relative">
                         <img
                           src={getGameThumbnail(game.thumbnail, game.title, '200x200')}
                           alt={game.title}
                           className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500"
                           referrerPolicy="no-referrer"
                         />
+                        {getGameCategory(game) && (
+                          <div className="absolute top-2 left-2 z-10">
+                            <span className="text-[8px] font-black px-1.5 py-0.5 bg-white/90 backdrop-blur-sm text-brand-blue rounded-md shadow-sm uppercase tracking-wider">
+                              {getGameCategory(game).name}
+                            </span>
+                          </div>
+                        )}
                       </div>
                       <div className="p-3 text-center">
                         <h3 className="font-bold text-zinc-800 text-xs truncate font-display">
@@ -498,6 +515,13 @@ function GameContent({ onLoginRequired }) {
                       }}
                     />
                     <div className="absolute inset-0 bg-gradient-to-t from-black/20 to-transparent opacity-0 group-hover:opacity-100 transition-opacity" />
+                    {getGameCategory(game) && (
+                      <div className="absolute top-3 left-3 z-10">
+                        <span className="text-[10px] font-black px-2 py-1 bg-white/90 backdrop-blur-sm text-brand-blue rounded-lg shadow-sm uppercase tracking-wider">
+                          {getGameCategory(game).name}
+                        </span>
+                      </div>
+                    )}
                   </div>
                   <div className="p-5 text-center">
                     <h3 className="font-extrabold text-zinc-800 group-hover:text-brand-blue transition-colors text-lg font-display">
