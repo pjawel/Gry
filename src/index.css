@@ -1,1 +1,26 @@
+@import url('https://fonts.googleapis.com/css2?family=Outfit:wght@400;600;800&family=Quicksand:wght@400;500;600;700&display=swap');
 @import "tailwindcss";
+
+@theme {
+  --font-sans: "Outfit", ui-sans-serif, system-ui, sans-serif;
+  --font-display: "Quicksand", sans-serif;
+  
+  --color-brand-yellow: #FFD600;
+  --color-brand-blue: #00A3FF;
+  --color-brand-pink: #FF4D94;
+  --color-brand-green: #4ADE80;
+}
+
+@layer base {
+  body {
+    @apply bg-[#FFFDF0] text-zinc-800;
+  }
+}
+
+.kid-shadow {
+  box-shadow: 0 8px 0 rgba(0, 0, 0, 0.05);
+}
+
+.kid-card-hover {
+  @apply transition-all duration-300 hover:-translate-y-1 hover:shadow-xl;
+}
