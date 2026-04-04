@@ -1,0 +1,6 @@
+User-agent: *
+Allow: /
+Allow: /favicon.svg
+Allow: /manifest.json
+
+Sitemap: https://ais-dev-bzdeshxxmyftou2jrm7qx4-741120598735.europe-west2.run.app/sitemap.xml

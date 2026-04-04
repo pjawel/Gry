@@ -87,6 +87,17 @@ function GameContent({ onLoginRequired }) {
     return CATEGORIES.find(c => c.id === categoryId) || null;
   }, [categoryId]);
 
+  const gameCategory = useMemo(() => {
+    if (!selectedGame) return null;
+    // Try to find a category based on keywords
+    return CATEGORIES.find(cat => 
+      cat.keywords.some(k => 
+        selectedGame.title.toLowerCase().includes(k.toLowerCase()) || 
+        (selectedGame.description && selectedGame.description.toLowerCase().includes(k.toLowerCase()))
+      )
+    ) || CATEGORIES[0]; // Fallback to first category
+  }, [selectedGame]);
+
   const [recentlyPlayed, setRecentlyPlayed] = useState(() => {
     const saved = localStorage.getItem('recentlyPlayed');
     if (saved) {
@@ -571,7 +582,20 @@ function GameContent({ onLoginRequired }) {
                 </button>
                 <div>
                   <h2 className="text-2xl font-black text-zinc-800 font-display">{selectedGame.title}</h2>
-                  <p className="text-sm text-zinc-500 font-medium">Grasz teraz w {selectedGame.title} 🎮</p>
+                  <div className="flex items-center gap-2 mt-1">
+                    <p className="text-sm text-zinc-500 font-medium">Grasz teraz w {selectedGame.title} 🎮</p>
+                    {gameCategory && (
+                      <>
+                        <span className="text-zinc-300">•</span>
+                        <Link 
+                          to={`/kategoria/${gameCategory.id}`}
+                          className="text-xs font-black px-2 py-1 bg-brand-blue/10 text-brand-blue rounded-lg hover:bg-brand-blue hover:text-white transition-all uppercase tracking-wider"
+                        >
+                          {gameCategory.name}
+                        </Link>
+                      </>
+                    )}
+                  </div>
                 </div>
               </div>
               
