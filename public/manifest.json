@@ -1,0 +1,17 @@
+{
+  "name": "GryZaDarmo",
+  "short_name": "GryZaDarmo",
+  "description": "Najlepsze darmowe gry online dla dzieci i dorosłych.",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#FFFDF0",
+  "theme_color": "#FF4D94",
+  "icons": [
+    {
+      "src": "/favicon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any maskable"
+    }
+  ]
+}

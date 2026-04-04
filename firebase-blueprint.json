@@ -1,0 +1,56 @@
+{
+  "entities": {
+    "User": {
+      "title": "User",
+      "description": "A user of the application",
+      "type": "object",
+      "properties": {
+        "uid": { "type": "string" },
+        "displayName": { "type": "string" },
+        "email": { "type": "string" },
+        "photoURL": { "type": "string" },
+        "createdAt": { "type": "string", "format": "date-time" }
+      },
+      "required": ["uid", "email"]
+    },
+    "Comment": {
+      "title": "Comment",
+      "description": "A comment on a game",
+      "type": "object",
+      "properties": {
+        "gameId": { "type": "string" },
+        "userId": { "type": "string" },
+        "author": { "type": "string" },
+        "text": { "type": "string" },
+        "createdAt": { "type": "string", "format": "date-time" }
+      },
+      "required": ["gameId", "userId", "author", "text"]
+    },
+    "Rating": {
+      "title": "Rating",
+      "description": "A user's rating for a game",
+      "type": "object",
+      "properties": {
+        "userId": { "type": "string" },
+        "gameId": { "type": "string" },
+        "value": { "type": "number" },
+        "updatedAt": { "type": "string", "format": "date-time" }
+      },
+      "required": ["userId", "gameId", "value"]
+    }
+  },
+  "firestore": {
+    "/users/{userId}": {
+      "schema": "User",
+      "description": "User profiles"
+    },
+    "/comments/{commentId}": {
+      "schema": "Comment",
+      "description": "Game comments"
+    },
+    "/ratings/{ratingId}": {
+      "schema": "Rating",
+      "description": "Game ratings (ID is userId_gameId)"
+    }
+  }
+}

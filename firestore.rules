@@ -1,0 +1,59 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    // ===============================================================
+    // Helper Functions
+    // ===============================================================
+    function isAuthenticated() {
+      return request.auth != null;
+    }
+    function isOwner(userId) {
+      return isAuthenticated() && request.auth.uid == userId;
+    }
+    function isValidString(field, min, max) {
+      return request.resource.data[field] is string && 
+             request.resource.data[field].size() >= min && 
+             request.resource.data[field].size() <= max;
+    }
+    function isValidEmail(email) {
+      return email.matches("^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\\.[a-zA-Z]{2,}$");
+    }
+
+    // ===============================================================
+    // User Profiles
+    // ===============================================================
+    match /users/{userId} {
+      allow read: if isAuthenticated();
+      allow create: if isOwner(userId) && 
+                     isValidString('displayName', 1, 50) &&
+                     isValidEmail(request.resource.data.email);
+      allow update: if isOwner(userId) && 
+                     isValidString('displayName', 1, 50) &&
+                     request.resource.data.email == resource.data.email;
+    }
+
+    // ===============================================================
+    // Comments
+    // ===============================================================
+    match /comments/{commentId} {
+      allow read: if true;
+      allow create: if isAuthenticated() && 
+                     request.resource.data.userId == request.auth.uid &&
+                     isValidString('text', 1, 1000) &&
+                     isValidString('author', 1, 50);
+      allow delete: if isAuthenticated() && resource.data.userId == request.auth.uid;
+    }
+
+    // ===============================================================
+    // Ratings
+    // ===============================================================
+    match /ratings/{ratingId} {
+      allow read: if true;
+      allow create, update: if isAuthenticated() && 
+                            request.resource.data.userId == request.auth.uid &&
+                            request.resource.data.value >= 1 &&
+                            request.resource.data.value <= 5 &&
+                            ratingId == request.auth.uid + "_" + request.resource.data.gameId;
+    }
+  }
+}

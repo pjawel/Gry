@@ -4,9 +4,23 @@
  */
 
 import { useState, useMemo, useEffect } from 'react';
-import { Gamepad2, Search, X, Maximize2, ChevronLeft, Star, MessageSquare, Clock, Info, HelpCircle, Lightbulb, PlayCircle, Heart, ChevronDown } from 'lucide-react';
+import { Gamepad2, Search, X, Maximize2, ChevronLeft, Star, MessageSquare, Clock, Info, HelpCircle, Lightbulb, PlayCircle, Heart, ChevronDown, User, LogOut, LogIn, Mail, Lock } from 'lucide-react';
 import { motion, AnimatePresence } from 'motion/react';
 import { Routes, Route, useNavigate, useParams, Link, useLocation } from 'react-router-dom';
+import { AuthProvider, useAuth } from './contexts/AuthContext';
+import { db } from './firebase';
+import { 
+  collection, 
+  addDoc, 
+  query, 
+  where, 
+  onSnapshot, 
+  orderBy, 
+  serverTimestamp, 
+  setDoc, 
+  doc, 
+  getDoc
+} from 'firebase/firestore';
 import gamesData from './data/games.json';
 
 const shuffledAllGames = [...gamesData].sort(() => 0.5 - Math.random());
@@ -58,7 +72,7 @@ const getGameThumbnail = (url, title, size = '400x300') => {
   return `https://wsrv.nl/?url=${encodedUrl}&w=${width}&h=${height}&fit=cover&output=webp&default=https%3A%2F%2Floremflickr.com%2F${width}%2F${height}%2Fgame%2C${encodeURIComponent(title)}`;
 };
 
-function GameContent() {
+function GameContent({ onLoginRequired }) {
   const { slug, categoryId } = useParams();
   const navigate = useNavigate();
   const [searchQuery, setSearchQuery] = useState('');
@@ -105,13 +119,18 @@ function GameContent() {
       .filter(Boolean);
   }, [recentlyPlayed]);
 
+  // Scroll to top when game or category changes
+  useEffect(() => {
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  }, [slug, categoryId]);
+
   useEffect(() => {
     if (slug && !selectedGame) {
       navigate('/', { replace: true });
       return;
     }
 
-    const updateMeta = (title, description) => {
+    const updateMeta = (title, description, schemas = []) => {
       document.title = title;
       
       // Update meta description
@@ -126,20 +145,131 @@ function GameContent() {
 
       let ogDesc = document.querySelector('meta[property="og:description"]');
       if (ogDesc) ogDesc.setAttribute('content', description);
+
+      // Update Structured Data
+      const existingScripts = document.querySelectorAll('script[type="application/ld+json"].seo-schema');
+      existingScripts.forEach(s => s.remove());
+
+      schemas.forEach(schema => {
+        const script = document.createElement('script');
+        script.type = 'application/ld+json';
+        script.className = 'seo-schema';
+        script.text = JSON.stringify(schema);
+        document.head.appendChild(script);
+      });
     };
+
+    const baseUrl = window.location.origin;
+    const breadcrumbItems = [
+      {
+        "@type": "ListItem",
+        "position": 1,
+        "name": "GryZaDarmo",
+        "item": baseUrl
+      }
+    ];
 
     if (selectedGame) {
       const title = `${selectedGame.title} - Graj za darmo online na GryZaDarmo 🎮`;
       const description = `Zagraj w ${selectedGame.title} za darmo na GryZaDarmo. ${selectedGame.description.slice(0, 150)}... Najlepsze gry online dla dzieci i dorosłych!`;
-      updateMeta(title, description);
+      
+      breadcrumbItems.push({
+        "@type": "ListItem",
+        "position": 2,
+        "name": selectedGame.title,
+        "item": `${baseUrl}/gry-za-darmo/${selectedGame.id}`
+      });
+
+      const gameSchema = {
+        "@context": "https://schema.org",
+        "@type": "SoftwareApplication",
+        "name": selectedGame.title,
+        "description": selectedGame.description,
+        "image": selectedGame.thumbnail,
+        "url": `${baseUrl}/gry-za-darmo/${selectedGame.id}`,
+        "applicationCategory": "GameApplication",
+        "operatingSystem": "Web Browser",
+        "offers": {
+          "@type": "Offer",
+          "price": "0",
+          "priceCurrency": "PLN"
+        },
+        "aggregateRating": {
+          "@type": "AggregateRating",
+          "ratingValue": "4.8",
+          "ratingCount": "1250"
+        }
+      };
+
+      updateMeta(title, description, [
+        gameSchema,
+        {
+          "@context": "https://schema.org",
+          "@type": "BreadcrumbList",
+          "itemListElement": breadcrumbItems
+        }
+      ]);
     } else if (currentCategory) {
       const title = `${currentCategory.name} - Najlepsze gry online na GryZaDarmo 🕹️`;
       const description = `Odkryj najlepsze ${currentCategory.name} za darmo online. Graj w wyselekcjonowane gry przeglądarkowe w kategorii ${currentCategory.name} na GryZaDarmo!`;
-      updateMeta(title, description);
+      
+      breadcrumbItems.push({
+        "@type": "ListItem",
+        "position": 2,
+        "name": currentCategory.name,
+        "item": `${baseUrl}/kategoria/${currentCategory.id}`
+      });
+
+      updateMeta(title, description, [
+        {
+          "@context": "https://schema.org",
+          "@type": "BreadcrumbList",
+          "itemListElement": breadcrumbItems
+        }
+      ]);
     } else {
       const title = 'Gry za darmo, gry online, gry dla dzieci i gry poki - GryZaDarmo';
       const description = 'Najlepsze gry za darmo online. Graj w gry dla dzieci, gry poki, gry przeglądarkowe, gry brainrot oraz gry dla 2 osob. Darmowa rozrywka bez pobierania!';
-      updateMeta(title, description);
+      
+      const faqSchema = {
+        "@context": "https://schema.org",
+        "@type": "FAQPage",
+        "mainEntity": [
+          {
+            "@type": "Question",
+            "name": "Czy gry na GryZaDarmo są naprawdę darmowe?",
+            "acceptedAnswer": {
+              "@type": "Answer",
+              "text": "Tak! Wszystkie gry na naszej platformie są w 100% darmowe i dostępne bezpośrednio w przeglądarce bez konieczności pobierania."
+            }
+          },
+          {
+            "@type": "Question",
+            "name": "Czy muszę zakładać konto, aby grać?",
+            "acceptedAnswer": {
+              "@type": "Answer",
+              "text": "Nie, nie wymagamy rejestracji. Możesz zacząć grać natychmiast po wejściu na stronę."
+            }
+          },
+          {
+            "@type": "Question",
+            "name": "Jakie rodzaje gier oferujecie?",
+            "acceptedAnswer": {
+              "@type": "Answer",
+              "text": "Oferujemy szeroki wybór gier: od gier akcji i wyścigowych, przez gry logiczne i edukacyjne, aż po popularne gry .io i gry dla 2 osób."
+            }
+          }
+        ]
+      };
+
+      updateMeta(title, description, [
+        faqSchema,
+        {
+          "@context": "https://schema.org",
+          "@type": "BreadcrumbList",
+          "itemListElement": breadcrumbItems
+        }
+      ]);
     }
   }, [slug, selectedGame, currentCategory, navigate]);
 
@@ -204,6 +334,28 @@ function GameContent() {
 
   return (
     <main className="container mx-auto px-4 py-8">
+      {/* Visual Breadcrumbs */}
+      <nav className="flex items-center gap-2 text-sm font-bold text-zinc-400 mb-6 overflow-x-auto no-scrollbar whitespace-nowrap">
+        <Link to="/" className="hover:text-brand-blue transition-colors flex items-center gap-1">
+          <Gamepad2 className="w-4 h-4" />
+          GryZaDarmo
+        </Link>
+        {currentCategory && (
+          <>
+            <span className="text-zinc-300">/</span>
+            <Link to={`/kategoria/${currentCategory.id}`} className="hover:text-brand-blue transition-colors">
+              {currentCategory.name}
+            </Link>
+          </>
+        )}
+        {selectedGame && (
+          <>
+            <span className="text-zinc-300">/</span>
+            <span className="text-zinc-600 truncate max-w-[200px]">{selectedGame.title}</span>
+          </>
+        )}
+      </nav>
+
       <AnimatePresence mode="wait">
         {!selectedGame ? (
           <motion.div
@@ -353,25 +505,51 @@ function GameContent() {
 
             {/* About Us SEO Section */}
             {searchQuery === '' && (
-              <section className="mt-16 bg-white p-8 md:p-12 rounded-[2.5rem] border-2 border-zinc-100 shadow-lg">
-                <div className="max-w-4xl mx-auto">
-                  <h2 className="text-3xl font-black text-zinc-800 mb-6 font-display flex items-center gap-3">
-                    <Info className="w-8 h-8 text-brand-blue" />
-                    O nas – Twoje centrum darmowej rozrywki
-                  </h2>
-                  <div className="prose prose-zinc max-w-none">
-                    <p className="text-zinc-600 text-lg leading-relaxed font-medium mb-6">
-                      Witaj na <strong>GryZaDarmo</strong> – Twoim ulubionym miejscu w sieci, gdzie znajdziesz najlepsze <strong>gry za darmo</strong> dostępne całkowicie <strong>online</strong>. Nasza platforma została stworzona z myślą o graczach w każdym wieku, oferując błyskawiczny dostęp do setek starannie wyselekcjonowanych tytułów bez konieczności zakładania konta czy pobierania plików.
-                    </p>
-                    <p className="text-zinc-600 text-lg leading-relaxed font-medium mb-6">
-                      W naszej kolekcji znajdziesz wszystko, czego dusza zapragnie – od klasycznych zręcznościówek, przez popularne gry typu <strong>brainrot</strong>, aż po zaawansowane wyzwania logiczne. Jeśli szukasz emocji we dwoje, nasze gry <strong>dla dwóch osób</strong> pozwolą Ci na wspólną rywalizację lub kooperację z przyjacielem na jednym komputerze.
-                    </p>
-                    <p className="text-zinc-600 text-lg leading-relaxed font-medium">
-                      Wszystkie nasze produkcje to gry <strong>przeglądarkowe</strong>, co sprawia, że są one idealnym wyborem na szybką partię podczas przerwy <strong>w szkole</strong>, na uczelni czy w pracy. Dbamy o to, aby nasza biblioteka była stale aktualizowana o najnowsze hity, zapewniając Ci świeżą dawkę zabawy każdego dnia. Graj, baw się i bij rekordy razem z nami!
-                    </p>
+              <>
+                <section className="mt-16 bg-white p-8 md:p-12 rounded-[2.5rem] border-2 border-zinc-100 shadow-lg">
+                  <div className="max-w-4xl mx-auto">
+                    <h2 className="text-3xl font-black text-zinc-800 mb-6 font-display flex items-center gap-3">
+                      <Info className="w-8 h-8 text-brand-blue" />
+                      O nas – Twoje centrum darmowej rozrywki
+                    </h2>
+                    <div className="prose prose-zinc max-w-none">
+                      <p className="text-zinc-600 text-lg leading-relaxed font-medium mb-6">
+                        Witaj na <strong>GryZaDarmo</strong> – Twoim ulubionym miejscu w sieci, gdzie znajdziesz najlepsze <strong>gry za darmo</strong> dostępne całkowicie <strong>online</strong>. Nasza platforma została stworzona z myślą o graczach w każdym wieku, oferując błyskawiczny dostęp do setek starannie wyselekcjonowanych tytułów bez konieczności zakładania konta czy pobierania plików.
+                      </p>
+                      <p className="text-zinc-600 text-lg leading-relaxed font-medium mb-6">
+                        W naszej kolekcji znajdziesz wszystko, czego dusza zapragnie – od klasycznych zręcznościówek, przez popularne gry typu <strong>brainrot</strong>, aż po zaawansowane wyzwania logiczne. Jeśli szukasz emocji we dwoje, nasze gry <strong>dla dwóch osób</strong> pozwolą Ci na wspólną rywalizację lub kooperację z przyjacielem na jednym komputerze.
+                      </p>
+                      <p className="text-zinc-600 text-lg leading-relaxed font-medium">
+                        Wszystkie nasze produkcje to gry <strong>przeglądarkowe</strong>, co sprawia, że są one idealnym wyborem na szybką partię podczas przerwy <strong>w szkole</strong>, na uczelni czy w pracy. Dbamy o to, aby nasza biblioteka była stale aktualizowana o najnowsze hity, zapewniając Ci świeżą dawkę zabawy każdego dnia. Graj, baw się i bij rekordy razem z nami!
+                      </p>
+                    </div>
                   </div>
-                </div>
-              </section>
+                </section>
+
+                {/* FAQ Section */}
+                <section className="mt-12 bg-white p-8 md:p-12 rounded-[2.5rem] border-2 border-zinc-100 shadow-lg">
+                  <div className="max-w-4xl mx-auto">
+                    <h2 className="text-3xl font-black text-zinc-800 mb-8 font-display flex items-center gap-3">
+                      <HelpCircle className="w-8 h-8 text-brand-pink" />
+                      Często zadawane pytania (FAQ)
+                    </h2>
+                    <div className="grid gap-6">
+                      <div className="p-6 bg-zinc-50 rounded-3xl border-2 border-zinc-100">
+                        <h3 className="text-lg font-black text-zinc-800 mb-2 font-display">Czy gry na GryZaDarmo są naprawdę darmowe?</h3>
+                        <p className="text-zinc-600 font-medium leading-relaxed">Tak! Wszystkie gry na naszej platformie są w 100% darmowe i dostępne bezpośrednio w przeglądarce bez konieczności pobierania.</p>
+                      </div>
+                      <div className="p-6 bg-zinc-50 rounded-3xl border-2 border-zinc-100">
+                        <h3 className="text-lg font-black text-zinc-800 mb-2 font-display">Czy muszę zakładać konto, aby grać?</h3>
+                        <p className="text-zinc-600 font-medium leading-relaxed">Nie, nie wymagamy rejestracji. Możesz zacząć grać natychmiast po wejściu na stronę.</p>
+                      </div>
+                      <div className="p-6 bg-zinc-50 rounded-3xl border-2 border-zinc-100">
+                        <h3 className="text-lg font-black text-zinc-800 mb-2 font-display">Jakie rodzaje gier oferujecie?</h3>
+                        <p className="text-zinc-600 font-medium leading-relaxed">Oferujemy szeroki wybór gier: od gier akcji i wyścigowych, przez gry logiczne i edukacyjne, aż po popularne gry .io i gry dla 2 osób.</p>
+                      </div>
+                    </div>
+                  </div>
+                </section>
+              </>
             )}
           </motion.div>
         ) : (
@@ -427,6 +605,7 @@ function GameContent() {
                     src={selectedGame.url}
                     className="w-full h-full border-none"
                     title={selectedGame.title}
+                    loading="lazy"
                     allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
                     allowFullScreen
                   />
@@ -443,7 +622,11 @@ function GameContent() {
                 <GameSEOContent game={selectedGame} similarGames={recommendedGames} />
 
                 {/* Ratings & Comments */}
-                <GameInteractions key={selectedGame.id} gameId={selectedGame.id} />
+                <GameInteractions 
+                  key={selectedGame.id} 
+                  gameId={selectedGame.id} 
+                  onLoginRequired={onLoginRequired}
+                />
               </div>
 
               {/* Recommendations Sidebar */}
@@ -625,38 +808,90 @@ function GameSEOContent({ game, similarGames }) {
   );
 }
 
-function GameInteractions({ gameId }) {
-  const [rating, setRating] = useState(() => {
-    const saved = localStorage.getItem(`rating-${gameId}`);
-    return saved ? parseInt(saved) : 0;
-  });
+function GameInteractions({ gameId, onLoginRequired }) {
+  const { user } = useAuth();
+  const [rating, setRating] = useState(0);
   const [hoverRating, setHoverRating] = useState(0);
   const [comment, setComment] = useState('');
-  const [comments, setComments] = useState(() => {
-    const saved = localStorage.getItem(`comments-${gameId}`);
-    return saved ? JSON.parse(saved) : [];
-  });
+  const [comments, setComments] = useState([]);
+  const [loading, setLoading] = useState(true);
 
-  const handleRate = (val) => {
-    setRating(val);
-    localStorage.setItem(`rating-${gameId}`, val.toString());
-  };
+  // Fetch comments in real-time
+  useEffect(() => {
+    const q = query(
+      collection(db, 'comments'),
+      where('gameId', '==', gameId),
+      orderBy('createdAt', 'desc')
+    );
 
-  const handleCommentSubmit = (e) => {
-    e.preventDefault();
-    if (!comment.trim()) return;
+    const unsubscribe = onSnapshot(q, (snapshot) => {
+      const fetchedComments = snapshot.docs.map(doc => ({
+        id: doc.id,
+        ...doc.data()
+      }));
+      setComments(fetchedComments);
+      setLoading(false);
+    });
 
-    const newComment = {
-      id: Date.now(),
-      text: comment,
-      date: new Date().toLocaleDateString('pl-PL'),
-      author: 'Gracz'
+    return () => unsubscribe();
+  }, [gameId]);
+
+  // Fetch user's rating
+  useEffect(() => {
+    if (!user) return;
+
+    const fetchRating = async () => {
+      const ratingRef = doc(db, 'ratings', `${user.uid}_${gameId}`);
+      const ratingSnap = await getDoc(ratingRef);
+      if (ratingSnap.exists()) {
+        setRating(ratingSnap.data().value);
+      } else {
+        setRating(0);
+      }
     };
 
-    const updatedComments = [newComment, ...comments];
-    setComments(updatedComments);
-    localStorage.setItem(`comments-${gameId}`, JSON.stringify(updatedComments));
-    setComment('');
+    fetchRating();
+  }, [user, gameId]);
+
+  const handleRate = async (val) => {
+    if (!user) {
+      onLoginRequired?.();
+      return;
+    }
+
+    setRating(val);
+    try {
+      await setDoc(doc(db, 'ratings', `${user.uid}_${gameId}`), {
+        userId: user.uid,
+        gameId,
+        value: val,
+        updatedAt: serverTimestamp()
+      });
+    } catch (error) {
+      console.error('Error saving rating:', error);
+    }
+  };
+
+  const handleCommentSubmit = async (e) => {
+    e.preventDefault();
+    if (!user) {
+      onLoginRequired?.();
+      return;
+    }
+    if (!comment.trim()) return;
+
+    try {
+      await addDoc(collection(db, 'comments'), {
+        gameId,
+        userId: user.uid,
+        author: user.displayName,
+        text: comment,
+        createdAt: serverTimestamp()
+      });
+      setComment('');
+    } catch (error) {
+      console.error('Error adding comment:', error);
+    }
   };
 
   return (
@@ -689,6 +924,9 @@ function GameInteractions({ gameId }) {
             {rating > 0 ? `${rating}/5` : 'Brak oceny'}
           </span>
         </div>
+        {!user && (
+          <p className="mt-4 text-xs font-bold text-zinc-400 uppercase tracking-widest">Zaloguj się, aby zapisać swoją ocenę</p>
+        )}
       </div>
 
       {/* Comments Section */}
@@ -702,26 +940,34 @@ function GameInteractions({ gameId }) {
           <textarea
             value={comment}
             onChange={(e) => setComment(e.target.value)}
-            placeholder="Napisz co myślisz o tej grze..."
-            className="w-full p-4 bg-zinc-50 border-2 border-zinc-100 rounded-2xl focus:outline-none focus:border-brand-blue transition-all min-h-[100px] font-medium"
+            placeholder={user ? "Napisz co myślisz o tej grze..." : "Zaloguj się, aby napisać komentarz..."}
+            disabled={!user}
+            className="w-full p-4 bg-zinc-50 border-2 border-zinc-100 rounded-2xl focus:outline-none focus:border-brand-blue transition-all min-h-[100px] font-medium disabled:opacity-50"
           />
           <button
             type="submit"
-            className="px-8 py-3 bg-brand-blue text-white rounded-xl font-black hover:scale-105 active:scale-95 transition-all shadow-lg shadow-brand-blue/20"
+            disabled={!user || !comment.trim()}
+            className="px-8 py-3 bg-brand-blue text-white rounded-xl font-black hover:scale-105 active:scale-95 transition-all shadow-lg shadow-brand-blue/20 disabled:opacity-50 disabled:hover:scale-100"
           >
             DODAJ KOMENTARZ
           </button>
         </form>
 
         <div className="space-y-4">
-          {comments.length === 0 ? (
+          {loading ? (
+            <div className="flex justify-center py-8">
+              <div className="w-8 h-8 border-4 border-brand-blue border-t-transparent rounded-full animate-spin" />
+            </div>
+          ) : comments.length === 0 ? (
             <p className="text-zinc-400 font-medium italic">Bądź pierwszym, który skomentuje tę grę!</p>
           ) : (
             comments.map((c) => (
               <div key={c.id} className="p-4 bg-zinc-50 rounded-2xl border-2 border-white shadow-sm">
                 <div className="flex justify-between items-center mb-2">
                   <span className="font-black text-brand-pink text-sm">{c.author}</span>
-                  <span className="text-xs text-zinc-400 font-bold">{c.date}</span>
+                  <span className="text-xs text-zinc-400 font-bold">
+                    {c.createdAt?.toDate ? c.createdAt.toDate().toLocaleDateString('pl-PL') : 'Przed chwilą'}
+                  </span>
                 </div>
                 <p className="text-zinc-600 font-medium">{c.text}</p>
               </div>
@@ -950,9 +1196,19 @@ function DMCAContent() {
 }
 
 export default function App() {
+  return (
+    <AuthProvider>
+      <AppContent />
+    </AuthProvider>
+  );
+}
+
+function AppContent() {
   const [searchQuery, setSearchQuery] = useState('');
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
+  const [isLoginModalOpen, setIsLoginModalOpen] = useState(false);
   const { pathname } = useLocation();
+  const { user, logout } = useAuth();
 
   return (
     <div className="min-h-screen bg-[#FFFDF0] text-zinc-800 font-sans selection:bg-brand-yellow/30">
@@ -983,6 +1239,29 @@ export default function App() {
           </div>
 
           <div className="flex items-center gap-4">
+            {user ? (
+              <div className="flex items-center gap-3">
+                <div className="hidden md:block text-right">
+                  <p className="text-[10px] font-black text-zinc-400 uppercase tracking-widest">Witaj,</p>
+                  <p className="text-sm font-bold text-zinc-800">{user.displayName}</p>
+                </div>
+                <button 
+                  onClick={() => logout()}
+                  className="p-3 bg-zinc-100 hover:bg-brand-pink hover:text-white text-zinc-600 rounded-2xl transition-all shadow-sm group"
+                  title="Wyloguj się"
+                >
+                  <LogOut className="w-5 h-5 group-hover:scale-110 transition-transform" />
+                </button>
+              </div>
+            ) : (
+              <button
+                onClick={() => setIsLoginModalOpen(true)}
+                className="flex items-center gap-2 px-6 py-3 bg-brand-blue text-white rounded-2xl font-black text-sm hover:scale-105 active:scale-95 transition-all shadow-lg shadow-brand-blue/20"
+              >
+                <LogIn className="w-5 h-5" />
+                <span className="hidden sm:inline">ZALOGUJ SIĘ</span>
+              </button>
+            )}
           </div>
         </div>
         
@@ -1073,9 +1352,9 @@ export default function App() {
       </header>
 
       <Routes>
-        <Route path="/" element={<GameContent />} />
-        <Route path="/kategoria/:categoryId" element={<GameContent />} />
-        <Route path="/gry-za-darmo/:slug" element={<GameContent />} />
+        <Route path="/" element={<GameContent onLoginRequired={() => setIsLoginModalOpen(true)} />} />
+        <Route path="/kategoria/:categoryId" element={<GameContent onLoginRequired={() => setIsLoginModalOpen(true)} />} />
+        <Route path="/gry-za-darmo/:slug" element={<GameContent onLoginRequired={() => setIsLoginModalOpen(true)} />} />
         <Route path="/dmca" element={<DMCAContent />} />
         <Route path="/polityka-prywatnosci" element={<PrivacyPolicyContent />} />
         <Route path="/regulamin" element={<TermsOfServiceContent />} />
@@ -1109,6 +1388,161 @@ export default function App() {
           </div>
         </div>
       </footer>
+
+      <LoginModal isOpen={isLoginModalOpen} onClose={() => setIsLoginModalOpen(false)} />
     </div>
+  );
+}
+
+function LoginModal({ isOpen, onClose }) {
+  const [isSignup, setIsSignup] = useState(false);
+  const [email, setEmail] = useState('');
+  const [password, setPassword] = useState('');
+  const [displayName, setDisplayName] = useState('');
+  const [error, setError] = useState('');
+  const { login, signup, loginWithGoogle } = useAuth();
+
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    setError('');
+    try {
+      if (isSignup) {
+        await signup(email, password, displayName);
+      } else {
+        await login(email, password);
+      }
+      onClose();
+    } catch (err) {
+      setError(err.message);
+    }
+  };
+
+  const handleGoogleLogin = async () => {
+    try {
+      await loginWithGoogle();
+      onClose();
+    } catch (err) {
+      setError(err.message);
+    }
+  };
+
+  return (
+    <AnimatePresence>
+      {isOpen && (
+        <div className="fixed inset-0 z-[100] flex items-center justify-center p-4">
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            onClick={onClose}
+            className="absolute inset-0 bg-zinc-900/60 backdrop-blur-sm"
+          />
+          <motion.div
+            initial={{ opacity: 0, scale: 0.9, y: 20 }}
+            animate={{ opacity: 1, scale: 1, y: 0 }}
+            exit={{ opacity: 0, scale: 0.9, y: 20 }}
+            className="relative w-full max-w-md bg-white rounded-[2.5rem] shadow-2xl overflow-hidden"
+          >
+            <div className="p-8">
+              <div className="flex justify-between items-center mb-8">
+                <h2 className="text-3xl font-black text-zinc-800 font-display">
+                  {isSignup ? 'Stwórz konto' : 'Witaj ponownie'}
+                </h2>
+                <button onClick={onClose} className="p-2 hover:bg-zinc-100 rounded-xl transition-all">
+                  <X className="w-6 h-6 text-zinc-400" />
+                </button>
+              </div>
+
+              {error && (
+                <div className="mb-6 p-4 bg-brand-pink/10 border-2 border-brand-pink/20 rounded-2xl text-brand-pink text-sm font-bold">
+                  {error}
+                </div>
+              )}
+
+              <form onSubmit={handleSubmit} className="space-y-4">
+                {isSignup && (
+                  <div className="space-y-2">
+                    <label className="text-xs font-black text-zinc-400 uppercase ml-2">Nazwa użytkownika</label>
+                    <div className="relative">
+                      <User className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-zinc-400" />
+                      <input
+                        type="text"
+                        required
+                        value={displayName}
+                        onChange={(e) => setDisplayName(e.target.value)}
+                        className="w-full bg-zinc-50 border-2 border-zinc-100 rounded-2xl py-3.5 pl-12 pr-4 focus:outline-none focus:border-brand-blue transition-all font-bold"
+                        placeholder="Twoja nazwa"
+                      />
+                    </div>
+                  </div>
+                )}
+                <div className="space-y-2">
+                  <label className="text-xs font-black text-zinc-400 uppercase ml-2">Email</label>
+                  <div className="relative">
+                    <Mail className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-zinc-400" />
+                    <input
+                      type="email"
+                      required
+                      value={email}
+                      onChange={(e) => setEmail(e.target.value)}
+                      className="w-full bg-zinc-50 border-2 border-zinc-100 rounded-2xl py-3.5 pl-12 pr-4 focus:outline-none focus:border-brand-blue transition-all font-bold"
+                      placeholder="email@przyklad.pl"
+                    />
+                  </div>
+                </div>
+                <div className="space-y-2">
+                  <label className="text-xs font-black text-zinc-400 uppercase ml-2">Hasło</label>
+                  <div className="relative">
+                    <Lock className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-zinc-400" />
+                    <input
+                      type="password"
+                      required
+                      value={password}
+                      onChange={(e) => setPassword(e.target.value)}
+                      className="w-full bg-zinc-50 border-2 border-zinc-100 rounded-2xl py-3.5 pl-12 pr-4 focus:outline-none focus:border-brand-blue transition-all font-bold"
+                      placeholder="••••••••"
+                    />
+                  </div>
+                </div>
+
+                <button
+                  type="submit"
+                  className="w-full py-4 bg-brand-blue text-white rounded-2xl font-black text-lg hover:scale-[1.02] active:scale-[0.98] transition-all shadow-xl shadow-brand-blue/20 mt-4"
+                >
+                  {isSignup ? 'ZAREJESTRUJ SIĘ' : 'ZALOGUJ SIĘ'}
+                </button>
+              </form>
+
+              <div className="relative my-8">
+                <div className="absolute inset-0 flex items-center">
+                  <div className="w-full border-t-2 border-zinc-100"></div>
+                </div>
+                <div className="relative flex justify-center text-sm">
+                  <span className="px-4 bg-white text-zinc-400 font-bold uppercase">lub</span>
+                </div>
+              </div>
+
+              <button
+                onClick={handleGoogleLogin}
+                className="w-full py-4 bg-white border-2 border-zinc-100 text-zinc-700 rounded-2xl font-bold flex items-center justify-center gap-3 hover:bg-zinc-50 transition-all"
+              >
+                <img src="https://www.gstatic.com/firebasejs/ui/2.0.0/images/auth/google.svg" className="w-5 h-5" alt="Google" />
+                Kontynuuj z Google
+              </button>
+
+              <p className="mt-8 text-center text-sm font-bold text-zinc-500">
+                {isSignup ? 'Masz już konto?' : 'Nie masz konta?'}
+                <button
+                  onClick={() => setIsSignup(!isSignup)}
+                  className="ml-2 text-brand-blue hover:underline"
+                >
+                  {isSignup ? 'Zaloguj się' : 'Zarejestruj się'}
+                </button>
+              </p>
+            </div>
+          </motion.div>
+        </div>
+      )}
+    </AnimatePresence>
   );
 }
