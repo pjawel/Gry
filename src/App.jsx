@@ -72,20 +72,52 @@ const getGameThumbnail = (url, title, size = '400x300') => {
   return `https://wsrv.nl/?url=${encodedUrl}&w=${width}&h=${height}&fit=cover&output=webp&default=https%3A%2F%2Floremflickr.com%2F${width}%2F${height}%2Fgame%2C${encodeURIComponent(title)}`;
 };
 
-const getGameCategory = (game) => {
-  if (!game) return null;
-  return CATEGORIES.find(cat => 
-    cat.keywords.some(k => 
-      game.title.toLowerCase().includes(k.toLowerCase()) || 
-      (game.description && game.description.toLowerCase().includes(k.toLowerCase()))
-    )
-  ) || CATEGORIES[0];
-};
+const BACKGROUND_ICONS = [Gamepad2, Star, Heart, PlayCircle, HelpCircle, Lightbulb];
+const BACKGROUND_ITEMS = [...Array(20)].map((_, i) => ({
+  id: i,
+  Icon: BACKGROUND_ICONS[i % BACKGROUND_ICONS.length],
+  size: Math.random() * 40 + 20,
+  left: Math.random() * 100,
+  top: Math.random() * 100,
+  duration: Math.random() * 20 + 20,
+  delay: Math.random() * -20
+}));
+
+function FloatingBackground() {
+  return (
+    <div className="fixed inset-0 pointer-events-none overflow-hidden z-0 opacity-[0.03]">
+      {BACKGROUND_ITEMS.map(({ id, Icon, size, left, top, duration, delay }) => (
+        <motion.div
+          key={id}
+          initial={{ x: `${left}vw`, y: `${top}vh`, rotate: 0 }}
+          animate={{ 
+            x: [`${left}vw`, `${(left + 10) % 100}vw`, `${left}vw`],
+            y: [`${top}vh`, `${(top + 10) % 100}vh`, `${top}vh`],
+            rotate: 360 
+          }}
+          transition={{ 
+            duration, 
+            repeat: Infinity, 
+            ease: "linear",
+            delay
+          }}
+          className="absolute"
+          style={{ width: size, height: size }}
+        >
+          <Icon className="w-full h-full" />
+        </motion.div>
+      ))}
+    </div>
+  );
+}
 
 function GameContent({ onLoginRequired }) {
   const { slug, categoryId } = useParams();
   const navigate = useNavigate();
   const [searchQuery, setSearchQuery] = useState('');
+
+  const [visibleCount, setVisibleCount] = useState(20);
+  const [isLoadingMore, setIsLoadingMore] = useState(false);
 
   const selectedGame = useMemo(() => {
     if (!slug) return null;
@@ -96,17 +128,6 @@ function GameContent({ onLoginRequired }) {
     if (!categoryId) return null;
     return CATEGORIES.find(c => c.id === categoryId) || null;
   }, [categoryId]);
-
-  const gameCategory = useMemo(() => {
-    if (!selectedGame) return null;
-    // Try to find a category based on keywords
-    return CATEGORIES.find(cat => 
-      cat.keywords.some(k => 
-        selectedGame.title.toLowerCase().includes(k.toLowerCase()) || 
-        (selectedGame.description && selectedGame.description.toLowerCase().includes(k.toLowerCase()))
-      )
-    ) || CATEGORIES[0]; // Fallback to first category
-  }, [selectedGame]);
 
   const [recentlyPlayed, setRecentlyPlayed] = useState(() => {
     const saved = localStorage.getItem('recentlyPlayed');
@@ -295,7 +316,7 @@ function GameContent({ onLoginRequired }) {
   }, [slug, selectedGame, currentCategory, navigate]);
 
   const filteredGames = useMemo(() => {
-    let games = gamesData;
+    let games = shuffledAllGames;
     
     if (categoryId) {
       const category = CATEGORIES.find(c => c.id === categoryId);
@@ -303,21 +324,31 @@ function GameContent({ onLoginRequired }) {
         if (category.id === 'inne') {
           // "Inne" category includes games that don't match any other category
           const otherCategories = CATEGORIES.filter(c => c.id !== 'inne');
-          games = games.filter(game => 
-            !otherCategories.some(cat => 
+          games = games.filter(game => {
+            // If game has manual categories, use them
+            if (game.categories && Array.isArray(game.categories)) {
+              return game.categories.includes('inne');
+            }
+            // Otherwise fallback to keyword matching
+            return !otherCategories.some(cat => 
               cat.keywords.some(keyword => 
                 game.title.toLowerCase().includes(keyword.toLowerCase()) || 
                 game.description.toLowerCase().includes(keyword.toLowerCase())
               )
-            )
-          );
+            );
+          });
         } else {
-          games = games.filter(game => 
-            category.keywords.some(keyword => 
+          games = games.filter(game => {
+            // If game has manual categories, use them
+            if (game.categories && Array.isArray(game.categories)) {
+              return game.categories.includes(categoryId);
+            }
+            // Otherwise fallback to keyword matching
+            return category.keywords.some(keyword => 
               game.title.toLowerCase().includes(keyword.toLowerCase()) || 
               game.description.toLowerCase().includes(keyword.toLowerCase())
-            )
-          );
+            );
+          });
         }
       }
     }
@@ -331,6 +362,33 @@ function GameContent({ onLoginRequired }) {
 
     return games;
   }, [categoryId, searchQuery]);
+
+  const visibleGames = useMemo(() => {
+    return filteredGames.slice(0, visibleCount);
+  }, [filteredGames, visibleCount]);
+
+  // Infinite scroll observer
+  useEffect(() => {
+    if (visibleCount >= filteredGames.length) return;
+
+    const observer = new IntersectionObserver(
+      (entries) => {
+        if (entries[0].isIntersecting && !isLoadingMore) {
+          setIsLoadingMore(true);
+          setTimeout(() => {
+            setVisibleCount(prev => prev + 20);
+            setIsLoadingMore(false);
+          }, 800); // Slight delay for the "loading" illusion
+        }
+      },
+      { threshold: 0.1 }
+    );
+
+    const target = document.getElementById('scroll-anchor');
+    if (target) observer.observe(target);
+
+    return () => observer.disconnect();
+  }, [visibleCount, filteredGames.length, isLoadingMore]);
 
   const handleGameSelect = (game) => {
     setRecentlyPlayed(prev => {
@@ -466,13 +524,6 @@ function GameContent({ onLoginRequired }) {
                           className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500"
                           referrerPolicy="no-referrer"
                         />
-                        {getGameCategory(game) && (
-                          <div className="absolute top-2 left-2 z-10">
-                            <span className="text-[8px] font-black px-1.5 py-0.5 bg-white/90 backdrop-blur-sm text-brand-blue rounded-md shadow-sm uppercase tracking-wider">
-                              {getGameCategory(game).name}
-                            </span>
-                          </div>
-                        )}
                       </div>
                       <div className="p-3 text-center">
                         <h3 className="font-bold text-zinc-800 text-xs truncate font-display">
@@ -486,11 +537,14 @@ function GameContent({ onLoginRequired }) {
             )}
 
             {/* Games Grid */}
-            <div id="games-grid" className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-6 md:gap-8">
-              {filteredGames.map((game) => (
+            <div id="games-grid" className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-6 md:gap-8 relative">
+              {visibleGames.map((game, index) => (
                 <motion.div
                   key={game.id}
                   layoutId={game.id}
+                  initial={{ opacity: 0, y: 20 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ delay: (index % 20) * 0.05 }}
                   whileHover={{ scale: 1.05, rotate: 1 }}
                   whileTap={{ scale: 0.95 }}
                   className="group relative bg-white border-2 border-zinc-100 rounded-[2rem] overflow-hidden cursor-pointer shadow-lg hover:shadow-2xl transition-all duration-300"
@@ -515,13 +569,6 @@ function GameContent({ onLoginRequired }) {
                       }}
                     />
                     <div className="absolute inset-0 bg-gradient-to-t from-black/20 to-transparent opacity-0 group-hover:opacity-100 transition-opacity" />
-                    {getGameCategory(game) && (
-                      <div className="absolute top-3 left-3 z-10">
-                        <span className="text-[10px] font-black px-2 py-1 bg-white/90 backdrop-blur-sm text-brand-blue rounded-lg shadow-sm uppercase tracking-wider">
-                          {getGameCategory(game).name}
-                        </span>
-                      </div>
-                    )}
                   </div>
                   <div className="p-5 text-center">
                     <h3 className="font-extrabold text-zinc-800 group-hover:text-brand-blue transition-colors text-lg font-display">
@@ -530,7 +577,24 @@ function GameContent({ onLoginRequired }) {
                   </div>
                 </motion.div>
               ))}
+
+              {/* Infinite Scroll Illusion: Skeletons */}
+              {isLoadingMore && (
+                <>
+                  {[...Array(10)].map((_, i) => (
+                    <div key={`skeleton-${i}`} className="bg-white border-2 border-zinc-100 rounded-[2rem] overflow-hidden shadow-lg animate-pulse">
+                      <div className="aspect-[4/3] bg-zinc-100" />
+                      <div className="p-5 flex justify-center">
+                        <div className="h-6 w-2/3 bg-zinc-100 rounded-lg" />
+                      </div>
+                    </div>
+                  ))}
+                </>
+              )}
             </div>
+
+            {/* Scroll Anchor */}
+            <div id="scroll-anchor" className="h-10 w-full" />
 
             {filteredGames.length === 0 && (
               <div className="py-20 text-center">
@@ -608,17 +672,6 @@ function GameContent({ onLoginRequired }) {
                   <h2 className="text-2xl font-black text-zinc-800 font-display">{selectedGame.title}</h2>
                   <div className="flex items-center gap-2 mt-1">
                     <p className="text-sm text-zinc-500 font-medium">Grasz teraz w {selectedGame.title} 🎮</p>
-                    {gameCategory && (
-                      <>
-                        <span className="text-zinc-300">•</span>
-                        <Link 
-                          to={`/kategoria/${gameCategory.id}`}
-                          className="text-xs font-black px-2 py-1 bg-brand-blue/10 text-brand-blue rounded-lg hover:bg-brand-blue hover:text-white transition-all uppercase tracking-wider"
-                        >
-                          {gameCategory.name}
-                        </Link>
-                      </>
-                    )}
                   </div>
                 </div>
               </div>
@@ -1259,7 +1312,8 @@ function AppContent() {
   const { user, logout } = useAuth();
 
   return (
-    <div className="min-h-screen bg-[#FFFDF0] text-zinc-800 font-sans selection:bg-brand-yellow/30">
+    <div className="min-h-screen bg-[#FFFDF0] text-zinc-800 font-sans selection:bg-brand-yellow/30 relative">
+      <FloatingBackground />
       {/* Header */}
       <header className="sticky top-0 z-40 w-full border-b-4 border-zinc-100 bg-white/90 backdrop-blur-md">
         <div className="container mx-auto px-4 h-20 flex items-center justify-between">
