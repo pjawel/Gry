@@ -7,7 +7,8 @@ import { useState, useMemo, useEffect } from 'react';
 import { Gamepad2, Search, X, Maximize2, ChevronLeft, Star, MessageSquare, Clock, Info, HelpCircle, Lightbulb, PlayCircle, Heart, ChevronDown, User, LogOut, LogIn, Mail, Lock } from 'lucide-react';
 import { motion, AnimatePresence } from 'motion/react';
 import { Routes, Route, useNavigate, useParams, Link, useLocation } from 'react-router-dom';
-import { AuthProvider, useAuth } from './contexts/AuthContext';
+import { AuthProvider } from './contexts/AuthContext';
+import { useAuth } from './hooks/useAuth';
 import { db } from './firebase';
 import { 
   collection, 
@@ -46,7 +47,6 @@ const CATEGORIES = [
   { id: 'dla-dziewczyn', name: 'Gry dla Dziewczyn', keywords: ['dziewczyn', 'dziewczyny', 'girls', 'princess', 'księżniczka', 'księżniczki', 'barbie', 'pony', 'kucyk', 'cute', 'słodkie', 'miłość', 'love', 'tester', 'randka'] },
   { id: 'dla-chlopcow', name: 'Gry dla Chłopców', keywords: ['chłopców', 'chłopcy', 'boys', 'car', 'gun', 'soldier', 'war', 'robot', 'superhero', 'wojsko', 'czołg', 'tank', 'broń', 'czołgi'] },
   { id: 'swiateczne', name: 'Gry Świąteczne', keywords: ['świąteczna', 'święta', 'christmas', 'mikołaj', 'santa', 'snow', 'śnieg', 'winter', 'zima', 'halloween', 'easter', 'wielkanoc', 'wakacje'] },
-  { id: 'inne', name: 'Inne Gry', keywords: [] },
 ];
 
 const getGameThumbnail = (url, title, size = '400x300') => {
@@ -224,13 +224,14 @@ function GameContent({ onLoginRequired }) {
 
       const gameSchema = {
         "@context": "https://schema.org",
-        "@type": "SoftwareApplication",
+        "@type": "VideoGame",
         "name": selectedGame.title,
         "description": selectedGame.description,
         "image": selectedGame.thumbnail,
         "url": `${baseUrl}/gry-za-darmo/${selectedGame.id}`,
         "applicationCategory": "GameApplication",
         "operatingSystem": "Web Browser",
+        "genre": selectedGame.categories?.join(', ') || "Online Game",
         "offers": {
           "@type": "Offer",
           "price": "0",
@@ -304,8 +305,25 @@ function GameContent({ onLoginRequired }) {
         ]
       };
 
+      const itemListSchema = {
+        "@context": "https://schema.org",
+        "@type": "ItemList",
+        "itemListElement": shuffledAllGames.slice(0, 20).map((game, index) => ({
+          "@type": "ListItem",
+          "position": index + 1,
+          "item": {
+            "@type": "VideoGame",
+            "name": game.title,
+            "description": game.description,
+            "image": game.thumbnail,
+            "url": `${baseUrl}/gry-za-darmo/${game.id}`
+          }
+        }))
+      };
+
       updateMeta(title, description, [
         faqSchema,
+        itemListSchema,
         {
           "@context": "https://schema.org",
           "@type": "BreadcrumbList",
@@ -321,35 +339,17 @@ function GameContent({ onLoginRequired }) {
     if (categoryId) {
       const category = CATEGORIES.find(c => c.id === categoryId);
       if (category) {
-        if (category.id === 'inne') {
-          // "Inne" category includes games that don't match any other category
-          const otherCategories = CATEGORIES.filter(c => c.id !== 'inne');
-          games = games.filter(game => {
-            // If game has manual categories, use them
-            if (game.categories && Array.isArray(game.categories)) {
-              return game.categories.includes('inne');
-            }
-            // Otherwise fallback to keyword matching
-            return !otherCategories.some(cat => 
-              cat.keywords.some(keyword => 
-                game.title.toLowerCase().includes(keyword.toLowerCase()) || 
-                game.description.toLowerCase().includes(keyword.toLowerCase())
-              )
-            );
-          });
-        } else {
-          games = games.filter(game => {
-            // If game has manual categories, use them
-            if (game.categories && Array.isArray(game.categories)) {
-              return game.categories.includes(categoryId);
-            }
-            // Otherwise fallback to keyword matching
-            return category.keywords.some(keyword => 
-              game.title.toLowerCase().includes(keyword.toLowerCase()) || 
-              game.description.toLowerCase().includes(keyword.toLowerCase())
-            );
-          });
-        }
+        games = games.filter(game => {
+          // If game has manual categories, use them
+          if (game.categories && Array.isArray(game.categories)) {
+            return game.categories.includes(categoryId);
+          }
+          // Otherwise fallback to keyword matching
+          return category.keywords.some(keyword => 
+            game.title.toLowerCase().includes(keyword.toLowerCase()) || 
+            game.description.toLowerCase().includes(keyword.toLowerCase())
+          );
+        });
       }
     }
 
